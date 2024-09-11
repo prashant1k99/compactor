@@ -27,8 +27,9 @@ func main() {
 		os.Exit(1)
 	}
 	frequency := GetFrequencyOfCharactersFromFile(file)
-	for _, freq := range frequency {
-		fmt.Printf("Character: %v | count: %d \t", string(freq.Character), freq.Count)
-	}
+	CreateBTreeFromFrequency(frequency)
+	// for _, freq := range frequency {
+	// 	fmt.Printf("Character: %v | count: %d \t", string(freq.Character), freq.Count)
+	// }
 	os.Exit(0)
 }

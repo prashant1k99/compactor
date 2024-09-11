@@ -14,7 +14,7 @@ Download the sample test file from [here](https://www.gutenberg.org/files/135/13
 
 - [x] Determine the frequency of every character in the input file.
 
-- [ ] Build a binary tree from the frequency
+- [x] Build a binary tree from the frequency
 
 - [ ] Generate a prefix code table from the tree
 

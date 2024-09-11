@@ -9,13 +9,18 @@ import (
 
 type Frequency map[rune]int
 
-func GetFrequencyOfCharactersForBatch(data string, freqChan chan Frequency, wg *sync.WaitGroup) {
-	defer wg.Done()
-
+func GetFrequencyFromString(data string) Frequency {
 	freq := make(Frequency)
 	for _, char := range data {
 		freq[char]++
 	}
+	return freq
+}
+
+func GetFrequencyOfCharactersForBatch(data string, freqChan chan Frequency, wg *sync.WaitGroup) {
+	defer wg.Done()
+
+	freq := GetFrequencyFromString(data)
 	freqChan <- freq
 }
 

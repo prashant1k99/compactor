@@ -68,7 +68,7 @@ func (pq PriorityQueue) Swap(i, j int) {
 }
 
 func PlaceNewInternalLeafInPlace(pq *PriorityQueue, node *InternalNode) {
-	fmt.Println("processing", node.Frequency())
+	// fmt.Println("processing", node.Frequency())
 	pq.Push(node)
 	i := pq.Len() - 1
 	for i > 0 {
@@ -93,8 +93,8 @@ func CreateBTreeFromFrequency(freq []LeafNode) {
 	for !pq.IsEmpty() {
 		minLeafNode := pq.Pop()
 		secondMinLeafNode := pq.Pop()
-		fmt.Println("min:", minLeafNode.Frequency())
-		fmt.Println("secondMin:", secondMinLeafNode.Frequency())
+		// fmt.Println("min:", minLeafNode.Frequency())
+		// fmt.Println("secondMin:", secondMinLeafNode.Frequency())
 		newInternalNode := InternalNode{
 			Children: []Node{
 				minLeafNode,

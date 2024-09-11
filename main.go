@@ -26,7 +26,9 @@ func main() {
 		fmt.Printf("unable to read file: %v", err)
 		os.Exit(1)
 	}
+
 	frequency := GetFrequencyOfCharactersFromFile(file)
+
 	CreateBTreeFromFrequency(frequency)
 	// for _, freq := range frequency {
 	// 	fmt.Printf("Character: %v | count: %d \t", string(freq.Character), freq.Count)

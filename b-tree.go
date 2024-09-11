@@ -1,9 +1,6 @@
 package main
 
-import (
-	"container/heap"
-	"fmt"
-)
+import "fmt"
 
 type Node interface {
 	Frequency() int
@@ -47,11 +44,10 @@ func (pq *PriorityQueue) Push(x interface{}) {
 	*pq = append(*pq, node)
 }
 
-func (pq *PriorityQueue) Pop() interface{} {
+func (pq *PriorityQueue) Pop() Node {
 	old := *pq
-	n := len(old)
-	item := old[n-1]
-	*pq = old[0 : n-1]
+	item := old[0]
+	*pq = old[1:]
 	return item
 }
 
@@ -60,7 +56,7 @@ func (pq *PriorityQueue) Peek() Node {
 }
 
 func (pq *PriorityQueue) IsEmpty() bool {
-	return pq.Len() == 0
+	return pq.Len() <= 1
 }
 
 func (pq PriorityQueue) Less(i, j int) bool {
@@ -71,17 +67,42 @@ func (pq PriorityQueue) Swap(i, j int) {
 	pq[i], pq[j] = pq[j], pq[i]
 }
 
+func PlaceNewInternalLeafInPlace(pq *PriorityQueue, node *InternalNode) {
+	fmt.Println("processing", node.Frequency())
+	pq.Push(node)
+	i := pq.Len() - 1
+	for i > 0 {
+		if pq.Less(i-1, i) {
+			pq.Swap(i, i-1)
+		}
+		if (*pq)[i].Frequency() <= node.Frequency() {
+			break
+		}
+		i--
+	}
+}
+
 func CreateBTreeFromFrequency(freq []LeafNode) {
 	// We need to save all the
 	pq := &PriorityQueue{}
-	heap.Init(pq)
 
 	for _, leaf := range freq {
-		heap.Push(pq, leaf)
+		pq.Push(leaf)
 	}
 
 	for !pq.IsEmpty() {
-		minNode := heap.Pop(pq).(Node)
-		fmt.Println(minNode.Frequency())
+		minLeafNode := pq.Pop()
+		secondMinLeafNode := pq.Pop()
+		fmt.Println("min:", minLeafNode.Frequency())
+		fmt.Println("secondMin:", secondMinLeafNode.Frequency())
+		newInternalNode := InternalNode{
+			Children: []Node{
+				minLeafNode,
+				secondMinLeafNode,
+			},
+			Count: minLeafNode.Frequency() + secondMinLeafNode.Frequency(),
+		}
+		PlaceNewInternalLeafInPlace(pq, &newInternalNode)
 	}
+	fmt.Println("root node", (*pq)[0])
 }

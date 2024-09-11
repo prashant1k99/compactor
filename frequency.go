@@ -17,7 +17,7 @@ func GetFrequencyFromString(data string) Frequency {
 	return freq
 }
 
-func GetFrequencyOfCharactersForBatch(data string, freqChan chan Frequency, wg *sync.WaitGroup) {
+func GetFreqOfCharForBatch(data string, freqChan chan Frequency, wg *sync.WaitGroup) {
 	defer wg.Done()
 
 	freq := GetFrequencyFromString(data)
@@ -38,14 +38,14 @@ func GetFrequencyOfCharactersFromFile(f *os.File) []LeafNode {
 		batch += scanner.Text()
 		if len(batch) >= batchSize {
 			wg.Add(1)
-			go GetFrequencyOfCharactersForBatch(batch, freqChan, &wg)
+			go GetFreqOfCharForBatch(batch, freqChan, &wg)
 			batch = ""
 		}
 	}
 
 	if len(batch) > 0 {
 		wg.Add(1)
-		go GetFrequencyOfCharactersForBatch(batch, freqChan, &wg)
+		go GetFreqOfCharForBatch(batch, freqChan, &wg)
 	}
 
 	go func() {

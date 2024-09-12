@@ -32,7 +32,15 @@ func main() {
 	// 	fmt.Printf("Char: %v | count: %d \n", string(freq.Character), freq.Count)
 	// }
 
-	CreateBTreeFromFrequency(frequency)
+	rootNode := CreateBTreeFromFrequency(frequency)
+	huffmanCodes, err := TraverseBTree(&rootNode)
+	if err != nil {
+		fmt.Println("error:", err)
+		os.Exit(1)
+	}
+	for char, code := range huffmanCodes {
+		fmt.Printf("Char %v | path %s \n", string(char), code)
+	}
 	// for _, freq := range frequency {
 	// 	fmt.Printf("Character: %v | count: %d \t", string(freq.Character), freq.Count)
 	// }

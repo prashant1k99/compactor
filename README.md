@@ -16,7 +16,7 @@ Download the sample test file from [here](https://www.gutenberg.org/files/135/13
 
 - [x] Build a binary tree from the frequency
 
-- [ ] Generate a prefix code table from the tree
+- [x] Generate a prefix code table from the tree
 
 - [ ] Encode the text using code table.
 

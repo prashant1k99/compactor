@@ -1,10 +1,10 @@
 package main
 
-import "fmt"
-
 type Node interface {
 	Frequency() int
 	IsLeaf() bool
+	Char() rune
+	Child() []Node
 }
 
 type LeafNode struct {
@@ -20,6 +20,14 @@ func (n LeafNode) IsLeaf() bool {
 	return true
 }
 
+func (n LeafNode) Char() rune {
+	return n.Character
+}
+
+func (n LeafNode) Child() []Node {
+	return nil
+}
+
 type InternalNode struct {
 	Children []Node
 	Count    int
@@ -31,6 +39,14 @@ func (n InternalNode) Frequency() int {
 
 func (n InternalNode) IsLeaf() bool {
 	return false
+}
+
+func (n InternalNode) Char() rune {
+	return 'a'
+}
+
+func (n InternalNode) Child() []Node {
+	return n.Children
 }
 
 type PriorityQueue []Node
@@ -82,7 +98,7 @@ func PlaceNewInternalLeafInPlace(pq *PriorityQueue, node *InternalNode) {
 	}
 }
 
-func CreateBTreeFromFrequency(freq []LeafNode) {
+func CreateBTreeFromFrequency(freq []LeafNode) Node {
 	// We need to save all the
 	pq := &PriorityQueue{}
 
@@ -104,5 +120,6 @@ func CreateBTreeFromFrequency(freq []LeafNode) {
 		}
 		PlaceNewInternalLeafInPlace(pq, &newInternalNode)
 	}
-	fmt.Println("root node", (*pq)[0])
+
+	return pq.Pop()
 }

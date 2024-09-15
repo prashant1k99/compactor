@@ -76,7 +76,7 @@ func (pq *PriorityQueue) IsEmpty() bool {
 }
 
 func (pq PriorityQueue) Less(i, j int) bool {
-	return pq[i].Frequency() > pq[j].Frequency()
+	return pq[i].Frequency() >= pq[j].Frequency()
 }
 
 func (pq PriorityQueue) Swap(i, j int) {
@@ -91,7 +91,7 @@ func PlaceNewInternalLeafInPlace(pq *PriorityQueue, node *InternalNode) {
 		if pq.Less(i-1, i) {
 			pq.Swap(i, i-1)
 		}
-		if (*pq)[i].Frequency() <= node.Frequency() {
+		if (*pq)[i-1].Frequency() < node.Frequency() {
 			break
 		}
 		i--

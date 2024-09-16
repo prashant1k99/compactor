@@ -10,13 +10,13 @@ Download the sample test file from [here](https://www.gutenberg.org/files/135/13
 
 ### Steps:
 
-- [x] Accept filename as input and check if the file is valid and readable or not. If not throw error.
+- [ ] Accept filename as input and check if the file is valid and readable or not. If not throw error.
 
-- [x] Determine the frequency of every character in the input file.
+- [ ] Determine the frequency of every character in the input file.
 
-- [x] Build a binary tree from the frequency
+- [ ] Build a binary tree from the frequency
 
-- [x] Generate a prefix code table from the tree
+- [ ] Generate a prefix code table from the tree
 
 - [ ] Encode the text using code table.
 

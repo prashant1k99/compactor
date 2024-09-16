@@ -18,8 +18,8 @@ Download the sample test file from [here](https://www.gutenberg.org/files/135/13
 
 - [x] Generate a prefix code table from the tree
 
-- [ ] Encode the text using code table.
+- [x] Encode the text using code table.
 
-- [ ] Encode the tree - we'll need to include this in this in the output file so we can decode it.
+- [x] Encode the tree - we'll need to include this in this in the output file so we can decode it.
 
-- [ ] Write the encoded tree and text to an output file.
+- [x] Write the encoded tree and text to an output file.

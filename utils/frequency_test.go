@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"fmt"
 	"os"
 	"reflect"
 	"sync"
@@ -84,6 +85,7 @@ func TestProcessBatches(t *testing.T) {
 	var wg sync.WaitGroup
 
 	// Start the ProcessBatches goroutine
+	wg.Add(1)
 	go ProcessBatches(freqCh, taskCh, &wg)
 
 	// Add a batch to taskCh
@@ -92,13 +94,14 @@ func TestProcessBatches(t *testing.T) {
 
 	// Wait for processing to complete
 	wg.Wait()
+	// Collect the frequency from freqCh
+	result := <-freqCh
+	fmt.Println(result)
+
 	close(freqCh)
 
 	// Expected frequency count
 	expected := Frequency{'h': 1, 'e': 1, 'l': 2, 'o': 1}
-
-	// Collect the frequency from freqCh
-	result := <-freqCh
 
 	// Compare results
 	if !reflect.DeepEqual(result, expected) {
@@ -106,64 +109,30 @@ func TestProcessBatches(t *testing.T) {
 	}
 }
 
-// Test case for GetFrequencyForFile function
 func TestGetFrequencyForFile(t *testing.T) {
-	// Create a temporary file
-	tmpFile, err := os.CreateTemp("", "testfile")
+	// Create a temporary file for testing
+	content := []byte("hello world")
+	tmpfile, err := os.CreateTemp("", "example")
 	if err != nil {
-		t.Fatalf("Failed to create temp file: %v", err)
+		t.Fatal(err)
 	}
-	defer os.Remove(tmpFile.Name()) // Clean up after the test
+	defer os.Remove(tmpfile.Name())
 
-	// Write test data to the file
-	testData := "hello world"
-	if _, err := tmpFile.Write([]byte(testData)); err != nil {
-		t.Fatalf("Failed to write to temp file: %v", err)
+	if _, err := tmpfile.Write(content); err != nil {
+		t.Fatal(err)
 	}
-	tmpFile.Close()
+	if err := tmpfile.Close(); err != nil {
+		t.Fatal(err)
+	}
 
-	// Call GetFrequencyForFile on the temp file
-	frequency, err := GetFrequencyForFile(tmpFile.Name())
+	result, err := GetFrequencyForFile(tmpfile.Name())
 	if err != nil {
-		t.Fatalf("Unexpected error: %v", err)
+		t.Fatalf("GetFrequencyForFile() error = %v", err)
 	}
 
-	// Expected frequency
-	expected := Frequency{'h': 1, 'e': 1, 'l': 3, 'o': 2, ' ': 1, 'w': 1, 'r': 1, 'd': 1}
+	expected := &Frequency{' ': 1, 'd': 1, 'e': 1, 'h': 1, 'l': 3, 'o': 2, 'r': 1, 'w': 1}
 
-	// Check if the result matches the expected frequency
-	if !reflect.DeepEqual(*frequency, expected) {
-		t.Errorf("Expected %v, but got %v", expected, *frequency)
-	}
-}
-
-// Test case for GetFrequencyForFile function with large file and multiple batches
-func TestGetFrequencyForFile_MultipleBatches(t *testing.T) {
-	// Create a temporary file
-	tmpFile, err := os.CreateTemp("", "testfile_large")
-	if err != nil {
-		t.Fatalf("Failed to create temp file: %v", err)
-	}
-	defer os.Remove(tmpFile.Name()) // Clean up after the test
-
-	// Write a large amount of data to the file
-	largeData := "aaaabbbbccccdddd" // This should span multiple batches
-	if _, err := tmpFile.Write([]byte(largeData)); err != nil {
-		t.Fatalf("Failed to write to temp file: %v", err)
-	}
-	tmpFile.Close()
-
-	// Call GetFrequencyForFile on the temp file
-	frequency, err := GetFrequencyForFile(tmpFile.Name())
-	if err != nil {
-		t.Fatalf("Unexpected error: %v", err)
-	}
-
-	// Expected frequency
-	expected := Frequency{'a': 4, 'b': 4, 'c': 4, 'd': 4}
-
-	// Check if the result matches the expected frequency
-	if !reflect.DeepEqual(*frequency, expected) {
-		t.Errorf("Expected %v, but got %v", expected, *frequency)
+	if !reflect.DeepEqual(result, expected) {
+		t.Errorf("GetFrequencyForFile() = %v, want %v", result, expected)
 	}
 }

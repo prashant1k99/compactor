@@ -23,7 +23,6 @@ func GetFrequencyCount(data string) Frequency {
 }
 
 func ProcessBatches(freqCh chan Frequency, taskCh chan []byte, wg *sync.WaitGroup) {
-	wg.Add(1)
 	defer wg.Done()
 
 	for fileChunk := range taskCh {
@@ -73,6 +72,11 @@ func GetFrequencyForFile(filePath string) (*Frequency, error) {
 		go ProcessBatches(freqCh, taskCh, &wg)
 	}
 
+	go func() {
+		wg.Wait()
+		close(freqCh)
+	}()
+
 	for {
 		buffer := make([]byte, batchSize)
 		byteRead, err := file.Read(buffer)
@@ -90,8 +94,6 @@ func GetFrequencyForFile(filePath string) (*Frequency, error) {
 	}
 
 	close(taskCh)
-	wg.Wait()
-
 	// Collect all frequencies
 	totalFreq := make(Frequency)
 	for freq := range freqCh {
@@ -99,7 +101,7 @@ func GetFrequencyForFile(filePath string) (*Frequency, error) {
 			totalFreq[char] += count
 		}
 	}
-	close(freqCh)
+
 	// Sort Frequency
 	totalFreq = sortFrequencyInAscending(totalFreq)
 

@@ -26,7 +26,7 @@ func main() {
 		fmt.Println("Successfully decompressed")
 		os.Exit(0)
 	}
-	fileName := "smallString.txt"
+	fileName := "gutenberg.txt"
 	file, err := ReadFile(fileName)
 	if err != nil {
 		fmt.Printf("unable to read file: %v", err)

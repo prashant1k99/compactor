@@ -1,7 +1,6 @@
-package utils
+package compressutils
 
 import (
-	"fmt"
 	"os"
 	"reflect"
 	"sync"
@@ -96,7 +95,6 @@ func TestProcessBatches(t *testing.T) {
 	wg.Wait()
 	// Collect the frequency from freqCh
 	result := <-freqCh
-	fmt.Println(result)
 
 	close(freqCh)
 

@@ -10,9 +10,9 @@ Download the sample test file from [here](https://www.gutenberg.org/files/135/13
 
 ### Steps:
 
-- [ ] Accept filename as input and check if the file is valid and readable or not. If not throw error.
+- [x] Accept filename as input and check if the file is valid and readable or not. If not throw error.
 
-- [ ] Determine the frequency of every character in the input file.
+- [x] Determine the frequency of every character in the input file.
 
 - [ ] Build a binary tree from the frequency
 
@@ -23,3 +23,5 @@ Download the sample test file from [here](https://www.gutenberg.org/files/135/13
 - [ ] Encode the tree - we'll need to include this in this in the output file so we can decode it.
 
 - [ ] Write the encoded tree and text to an output file.
+
+- [ ] Gloss-up the application using Charm tools

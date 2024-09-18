@@ -44,7 +44,7 @@ func HandleNodes(nodeCh chan NodePath, wg *sync.WaitGroup) {
 	}
 }
 
-func TraverseBTree(rootNode *Node) (HuffmanCodeTable, error) {
+func TraverseBTreeToGenerateHuffmanCodes(rootNode *Node) (HuffmanCodeTable, error) {
 	node := *rootNode
 	if len(node.Child()) == 0 && node.IsLeaf() {
 		return nil, errors.New("invalid root node: has no child and not a leaf node")

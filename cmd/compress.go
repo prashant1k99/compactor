@@ -20,6 +20,7 @@ var (
 func writeCompressedFileMetadata(file *os.File) {
 	fmt.Fprintf(file, "PaddingBits:%d\n", PaddingBits)
 	for key, val := range huffmanCodes {
+		// fmt.Printf("writing %c:%s\n", key, val)
 		fmt.Fprintf(file, "%c:%s\n", key, val)
 	}
 	fmt.Fprintf(file, "DATA_STARTS:\n")
@@ -64,11 +65,12 @@ func convertBinaryToBytes(binaryString string, isLastBatch bool) ([]byte, string
 
 	// Step4: it it's last batch, then pad the unprocessableBits to process them with additional bits and save them
 	if isLastBatch && unprocessableBitsCount > 0 {
-		PaddingBits = 8 - unprocessableBitsCount
 		for unprocessableBitsCount < 8 {
+			PaddingBits++
 			unprocessableBits += "0"
 			unprocessableBitsCount++
 		}
+		fmt.Println("PaddingBits:", PaddingBits)
 		byteVal, _ := strconv.ParseUint(unprocessableBits, 2, 8)
 		handledBytes = append(handledBytes, byte(byteVal))
 	}
@@ -84,13 +86,14 @@ func CompressFile(filePath string, outputPath string) error {
 	}
 	// Generate b tree and then geenrate huffman code HuffmanCodeTable
 	rootNode := compressutils.CreateBTreeFromFrequency(*frequncyForFile)
+	// TODO: Need to debug the huffman code generateion, 100% ok till frequency generatiuon and logs of rootNode frequency seems to be correct
 	huffmanCodes, err = compressutils.TraverseBTreeToGenerateHuffmanCodes(rootNode)
 	if err != nil {
 		return err
 	}
 
 	// Open a output file for streaming
-	outputFile, err := os.Create(outputPath)
+	outputFile, err := os.OpenFile(outputPath, os.O_WRONLY|os.O_CREATE|os.O_APPEND|os.O_TRUNC, 0644)
 	if err != nil {
 		return err
 	}
@@ -112,6 +115,7 @@ func CompressFile(filePath string, outputPath string) error {
 	}
 	readFileSize := readFileStat.Size()
 	totalBytesRead := 0
+	remainingBytes := ""
 
 	for {
 		buffer := make([]byte, batchSize)
@@ -128,8 +132,14 @@ func CompressFile(filePath string, outputPath string) error {
 			// Process the batch
 			totalBytesRead += byteRead
 			isLastBatch := totalBytesRead == int(readFileSize)
-			fmt.Println("IsLastbatch:", isLastBatch)
+			binaryString := convertBytesToBinary(buffer[:byteRead])
+			binaryString += remainingBytes
+			compressedData, remaining := convertBinaryToBytes(binaryString, isLastBatch)
+			remainingBytes = remaining
+
+			outputFile.Write(compressedData)
 			// Update the CompressedPercentage variable so it can be used to show status in CLI
+			CompressedPercentage = (totalBytesRead / int(readFileSize)) * 100
 		}
 	}
 

@@ -8,29 +8,31 @@ import (
 
 type HuffmanCodeTable map[rune]string
 
-var (
-	HuffmanCodes = make(HuffmanCodeTable)
-	mu           sync.RWMutex
-)
-
 type NodePath struct {
 	Node *Node
 	Path string
 }
 
-func HandleLeafNode(node *Node, path string) {
-	mu.Lock()
-	defer mu.Unlock()
-	HuffmanCodes[(*node).Char()] = path
+type HuffmanCodeChannel struct {
+	Path string
+	Char rune
 }
 
-func HandleNodes(nodeCh chan NodePath, wg *sync.WaitGroup) {
+func HandleLeafNode(node *Node, path string, huffmanCh chan<- HuffmanCodeChannel) {
+	huffmanCh <- HuffmanCodeChannel{
+		Char: (*node).Char(),
+		Path: path,
+	}
+}
+
+func HandleNodes(nodeCh chan NodePath, huffmanCh chan<- HuffmanCodeChannel, wg *sync.WaitGroup) {
 	defer wg.Done()
+	defer fmt.Println("Closing goroutine")
 
 	for np := range nodeCh {
 		node := np.Node
 		if (*node).IsLeaf() {
-			HandleLeafNode(node, np.Path)
+			HandleLeafNode(node, np.Path, huffmanCh)
 		} else {
 			// Handle childrens and add them to nodeCh with updatedPath
 			for i, child := range (*node).Child() {
@@ -50,18 +52,24 @@ func TraverseBTreeToGenerateHuffmanCodes(rootNode *Node) (HuffmanCodeTable, erro
 		return nil, errors.New("invalid root node: has no child and not a leaf node")
 	}
 
-	nodeCh := make(chan NodePath)
+	nodeCh := make(chan NodePath, 1000)
+	huffmanCh := make(chan HuffmanCodeChannel)
 
 	var wg sync.WaitGroup
+	huffmanCodes := make(HuffmanCodeTable)
 
 	for i := 0; i < maxGoroutines; i++ {
 		wg.Add(1)
-		go HandleNodes(nodeCh, &wg)
+		go HandleNodes(nodeCh, huffmanCh, &wg)
 	}
-
 	go func() {
+		fmt.Println("Scheduling cancel")
 		wg.Wait()
+		fmt.Println("All process finished")
 		close(nodeCh)
+		fmt.Println("Closed nodeCh")
+		close(huffmanCh)
+		fmt.Println("Closed huffmanCh")
 	}()
 
 	nodeCh <- NodePath{
@@ -69,5 +77,22 @@ func TraverseBTreeToGenerateHuffmanCodes(rootNode *Node) (HuffmanCodeTable, erro
 		Path: "",
 	}
 
-	return HuffmanCodes, nil
+	go func() {
+		fmt.Println("Here:")
+		for {
+			code, ok := <-huffmanCh
+			if !ok {
+				fmt.Println("Break command called")
+				break
+			}
+			fmt.Println("handling:", code.Char, code.Path)
+			huffmanCodes[code.Char] = code.Path
+		}
+
+		fmt.Println("HERE:")
+	}()
+
+	fmt.Println("Done here:")
+
+	return huffmanCodes, nil
 }

@@ -42,7 +42,7 @@ func (n *InternalNode) Frequency() int {
 }
 
 func (n *InternalNode) Char() rune {
-	return 'a'
+	return '/'
 }
 
 func (n *InternalNode) Child() []*Node {

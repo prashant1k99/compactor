@@ -38,7 +38,7 @@ func TestInternalNode(t *testing.T) {
 		t.Errorf("InternalNode.Frequency() = %d; want 5", internal.Frequency())
 	}
 
-	if internal.Char() != 'a' {
+	if internal.Char() != '/' {
 		t.Errorf("InternalNode.Char() = %c; want 'a'", internal.Char())
 	}
 

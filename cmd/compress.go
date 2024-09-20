@@ -20,7 +20,6 @@ var (
 func writeCompressedFileMetadata(file *os.File) {
 	fmt.Fprintf(file, "PaddingBits:%d\n", PaddingBits)
 	for key, val := range huffmanCodes {
-		// fmt.Printf("writing %c:%s\n", key, val)
 		fmt.Fprintf(file, "%c:%s\n", key, val)
 	}
 	fmt.Fprintf(file, "DATA_STARTS:\n")
@@ -86,11 +85,12 @@ func CompressFile(filePath string, outputPath string) error {
 	}
 	// Generate b tree and then geenrate huffman code HuffmanCodeTable
 	rootNode := compressutils.CreateBTreeFromFrequency(*frequncyForFile)
-	// TODO: Need to debug the huffman code generateion, 100% ok till frequency generatiuon and logs of rootNode frequency seems to be correct
 	huffmanCodes, err = compressutils.TraverseBTreeToGenerateHuffmanCodes(rootNode)
 	if err != nil {
 		return err
 	}
+
+	fmt.Println("HuffmaneCodes:", huffmanCodes)
 
 	// Open a output file for streaming
 	outputFile, err := os.OpenFile(outputPath, os.O_WRONLY|os.O_CREATE|os.O_APPEND|os.O_TRUNC, 0644)

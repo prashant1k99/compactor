@@ -141,22 +141,25 @@ func TestTraverseBTree(t *testing.T) {
 	})
 
 	tests := []struct {
-		rootNode    Node
-		expected    HuffmanCodeTable
-		name        string
-		expectedErr bool
+		rootNode           Node
+		expected           HuffmanCodeTable
+		name               string
+		codeToBeCalculated int
+		expectedErr        bool
 	}{
 		{
-			name:        "Valid tree",
-			rootNode:    twoLeafNode,
-			expected:    HuffmanCodeTable{'a': "0", 'b': "1"},
-			expectedErr: false,
+			name:               "Valid tree",
+			rootNode:           twoLeafNode,
+			expected:           HuffmanCodeTable{'a': "0", 'b': "1"},
+			codeToBeCalculated: 2,
+			expectedErr:        false,
 		},
 		{
-			name:        "Invalid root node (leaf node)",
-			rootNode:    &LeafNode{Character: 'a', Freq: 1},
-			expected:    nil,
-			expectedErr: true,
+			name:               "Invalid root node (leaf node)",
+			rootNode:           &LeafNode{Character: 'a', Freq: 1},
+			expected:           nil,
+			codeToBeCalculated: 0,
+			expectedErr:        true,
 		},
 		{
 			name: "Complex tree",
@@ -167,14 +170,15 @@ func TestTraverseBTree(t *testing.T) {
 				},
 				Freq: 9,
 			},
-			expected:    HuffmanCodeTable{'a': "00", 'b': "01", 'c': "1"},
-			expectedErr: false,
+			expected:           HuffmanCodeTable{'a': "00", 'b': "01", 'c': "1"},
+			codeToBeCalculated: 3,
+			expectedErr:        false,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			result, err := TraverseBTreeToGenerateHuffmanCodes(&tt.rootNode)
+			result, err := TraverseBTreeToGenerateHuffmanCodes(&tt.rootNode, tt.codeToBeCalculated)
 			if (err != nil) != tt.expectedErr {
 				t.Errorf("TraverseBTree() error = %v, expectedErr %v", err, tt.expectedErr)
 				return

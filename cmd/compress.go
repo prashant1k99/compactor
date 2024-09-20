@@ -83,14 +83,15 @@ func CompressFile(filePath string, outputPath string) error {
 	if err != nil {
 		return err
 	}
+
 	// Generate b tree and then geenrate huffman code HuffmanCodeTable
 	rootNode := compressutils.CreateBTreeFromFrequency(*frequncyForFile)
-	huffmanCodes, err = compressutils.TraverseBTreeToGenerateHuffmanCodes(rootNode)
+
+	totalCodeCount := len((*frequncyForFile))
+	huffmanCodes, err = compressutils.TraverseBTreeToGenerateHuffmanCodes(rootNode, totalCodeCount)
 	if err != nil {
 		return err
 	}
-
-	fmt.Println("HuffmaneCodes:", huffmanCodes)
 
 	// Open a output file for streaming
 	outputFile, err := os.OpenFile(outputPath, os.O_WRONLY|os.O_CREATE|os.O_APPEND|os.O_TRUNC, 0644)

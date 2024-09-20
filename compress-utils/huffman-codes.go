@@ -27,7 +27,6 @@ func HandleLeafNode(node *Node, path string, huffmanCh chan<- HuffmanCodeChannel
 
 func HandleNodes(nodeCh chan NodePath, huffmanCh chan<- HuffmanCodeChannel, wg *sync.WaitGroup) {
 	defer wg.Done()
-	defer fmt.Println("Closing goroutine")
 
 	for np := range nodeCh {
 		node := np.Node
@@ -46,7 +45,7 @@ func HandleNodes(nodeCh chan NodePath, huffmanCh chan<- HuffmanCodeChannel, wg *
 	}
 }
 
-func TraverseBTreeToGenerateHuffmanCodes(rootNode *Node) (HuffmanCodeTable, error) {
+func TraverseBTreeToGenerateHuffmanCodes(rootNode *Node, totalCodeCount int) (HuffmanCodeTable, error) {
 	node := *rootNode
 	if len(node.Child()) == 0 && node.IsLeaf() {
 		return nil, errors.New("invalid root node: has no child and not a leaf node")
@@ -62,37 +61,28 @@ func TraverseBTreeToGenerateHuffmanCodes(rootNode *Node) (HuffmanCodeTable, erro
 		wg.Add(1)
 		go HandleNodes(nodeCh, huffmanCh, &wg)
 	}
+
+	// Start the goroutine that reads from huffmanCh
 	go func() {
-		fmt.Println("Scheduling cancel")
-		wg.Wait()
-		fmt.Println("All process finished")
-		close(nodeCh)
-		fmt.Println("Closed nodeCh")
-		close(huffmanCh)
-		fmt.Println("Closed huffmanCh")
+		processedCodes := 0
+		for code := range huffmanCh {
+			processedCodes++
+			huffmanCodes[code.Char] = code.Path
+			if processedCodes >= totalCodeCount {
+				close(nodeCh)
+				close(huffmanCh)
+			}
+		}
 	}()
 
+	// Start the root node processing
 	nodeCh <- NodePath{
 		Node: rootNode,
 		Path: "",
 	}
 
-	go func() {
-		fmt.Println("Here:")
-		for {
-			code, ok := <-huffmanCh
-			if !ok {
-				fmt.Println("Break command called")
-				break
-			}
-			fmt.Println("handling:", code.Char, code.Path)
-			huffmanCodes[code.Char] = code.Path
-		}
-
-		fmt.Println("HERE:")
-	}()
-
-	fmt.Println("Done here:")
+	// Ensure that all nodes are processed before returning
+	wg.Wait()
 
 	return huffmanCodes, nil
 }

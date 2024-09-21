@@ -8,14 +8,14 @@ import (
 
 func TestHandleLeafNode(t *testing.T) {
 	tests := []struct {
-		node     Node
-		expected HuffmanCodeChannel
 		name     string
 		path     string
+		node     node
+		expected HuffmanCodeChannel
 	}{
 		{
 			name: "Single leaf node",
-			node: &LeafNode{Character: 'a', Freq: 1},
+			node: &leafNode{Character: 'a', Freq: 1},
 			path: "010100",
 			expected: HuffmanCodeChannel{
 				Char: 'a',
@@ -24,7 +24,7 @@ func TestHandleLeafNode(t *testing.T) {
 		},
 		{
 			name:     "Multiple leaf nodes",
-			node:     &LeafNode{Character: 'b', Freq: 2},
+			node:     &leafNode{Character: 'b', Freq: 2},
 			path:     "10",
 			expected: HuffmanCodeChannel{Char: 'b', Path: "10"},
 		},
@@ -34,7 +34,7 @@ func TestHandleLeafNode(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			huffmanCh := make(chan HuffmanCodeChannel, 2)
 
-			HandleLeafNode(&tt.node, tt.path, huffmanCh)
+			handleLeafNode(&tt.node, tt.path, huffmanCh)
 
 			huffmanCodes := <-huffmanCh
 
@@ -46,21 +46,21 @@ func TestHandleLeafNode(t *testing.T) {
 }
 
 func TestHandleNodes(t *testing.T) {
-	nodeA := Node(&LeafNode{
+	nodeA := node(&leafNode{
 		Character: 'a',
 		Freq:      1,
 	})
-	nodeB := Node(&LeafNode{
+	nodeB := node(&leafNode{
 		Character: 'b',
 		Freq:      2,
 	})
-	nodeC := Node(&LeafNode{
+	nodeC := node(&leafNode{
 		Character: 'c',
 		Freq:      '1',
 	})
 
-	twoLeafNode := Node(&InternalNode{
-		Children: []*Node{
+	twoLeafNode := node(&internalNode{
+		Children: []*node{
 			&nodeB,
 			&nodeC,
 		},
@@ -93,7 +93,7 @@ func TestHandleNodes(t *testing.T) {
 		var wg sync.WaitGroup
 
 		wg.Add(1)
-		go HandleNodes(nodeCh, huffmanCh, &wg)
+		go handleNodes(nodeCh, huffmanCh, &wg)
 
 		nodeCh <- tt.nodes[0]
 
@@ -118,22 +118,22 @@ func TestHandleNodes(t *testing.T) {
 }
 
 func TestTraverseBTree(t *testing.T) {
-	nodeA := Node(&LeafNode{
+	nodeA := node(&leafNode{
 		Character: 'a',
 		Freq:      2,
 	})
-	nodeB := Node(&LeafNode{
+	nodeB := node(&leafNode{
 		Character: 'b',
 		Freq:      1,
 	})
 
-	nodeC := Node(&LeafNode{
+	nodeC := node(&leafNode{
 		Character: 'c',
 		Freq:      5,
 	})
 
-	twoLeafNode := Node(&InternalNode{
-		Children: []*Node{
+	twoLeafNode := node(&internalNode{
+		Children: []*node{
 			&nodeA,
 			&nodeB,
 		},
@@ -141,7 +141,7 @@ func TestTraverseBTree(t *testing.T) {
 	})
 
 	tests := []struct {
-		rootNode           Node
+		rootNode           node
 		expected           HuffmanCodeTable
 		name               string
 		codeToBeCalculated int
@@ -156,15 +156,15 @@ func TestTraverseBTree(t *testing.T) {
 		},
 		{
 			name:               "Invalid root node (leaf node)",
-			rootNode:           &LeafNode{Character: 'a', Freq: 1},
+			rootNode:           &leafNode{Character: 'a', Freq: 1},
 			expected:           nil,
 			codeToBeCalculated: 0,
 			expectedErr:        true,
 		},
 		{
 			name: "Complex tree",
-			rootNode: &InternalNode{
-				Children: []*Node{
+			rootNode: &internalNode{
+				Children: []*node{
 					&twoLeafNode,
 					&nodeC,
 				},

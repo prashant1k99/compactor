@@ -9,7 +9,7 @@ import (
 type HuffmanCodeTable map[rune]string
 
 type NodePath struct {
-	Node *Node
+	Node *node
 	Path string
 }
 
@@ -18,20 +18,20 @@ type HuffmanCodeChannel struct {
 	Char rune
 }
 
-func HandleLeafNode(node *Node, path string, huffmanCh chan<- HuffmanCodeChannel) {
+func handleLeafNode(node *node, path string, huffmanCh chan<- HuffmanCodeChannel) {
 	huffmanCh <- HuffmanCodeChannel{
 		Char: (*node).Char(),
 		Path: path,
 	}
 }
 
-func HandleNodes(nodeCh chan NodePath, huffmanCh chan<- HuffmanCodeChannel, wg *sync.WaitGroup) {
+func handleNodes(nodeCh chan NodePath, huffmanCh chan<- HuffmanCodeChannel, wg *sync.WaitGroup) {
 	defer wg.Done()
 
 	for np := range nodeCh {
 		node := np.Node
 		if (*node).IsLeaf() {
-			HandleLeafNode(node, np.Path, huffmanCh)
+			handleLeafNode(node, np.Path, huffmanCh)
 		} else {
 			// Handle childrens and add them to nodeCh with updatedPath
 			for i, child := range (*node).Child() {
@@ -45,7 +45,7 @@ func HandleNodes(nodeCh chan NodePath, huffmanCh chan<- HuffmanCodeChannel, wg *
 	}
 }
 
-func TraverseBTreeToGenerateHuffmanCodes(rootNode *Node, totalCodeCount int) (HuffmanCodeTable, error) {
+func TraverseBTreeToGenerateHuffmanCodes(rootNode *node, totalCodeCount int) (HuffmanCodeTable, error) {
 	node := *rootNode
 	if len(node.Child()) == 0 && node.IsLeaf() {
 		return nil, errors.New("invalid root node: has no child and not a leaf node")
@@ -59,7 +59,7 @@ func TraverseBTreeToGenerateHuffmanCodes(rootNode *Node, totalCodeCount int) (Hu
 
 	for i := 0; i < maxGoroutines; i++ {
 		wg.Add(1)
-		go HandleNodes(nodeCh, huffmanCh, &wg)
+		go handleNodes(nodeCh, huffmanCh, &wg)
 	}
 
 	// Start the goroutine that reads from huffmanCh

@@ -56,7 +56,7 @@ func TestGetFrequencyCount(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		result := GetFrequencyCount(test.input)
+		result := getFrequencyCount(test.input)
 		if !reflect.DeepEqual(result, test.expected) {
 			t.Errorf("For input '%s', expected %v, but got %v", test.input, test.expected, result)
 		}
@@ -85,7 +85,7 @@ func TestProcessBatches(t *testing.T) {
 
 	// Start the ProcessBatches goroutine
 	wg.Add(1)
-	go ProcessBatches(freqCh, taskCh, &wg)
+	go processBatches(freqCh, taskCh, &wg)
 
 	// Add a batch to taskCh
 	taskCh <- []byte("hello")

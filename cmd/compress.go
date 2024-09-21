@@ -13,12 +13,12 @@ const batchSize = 1024
 
 var (
 	huffmanCodes         = make(compressutils.HuffmanCodeTable)
-	PaddingBits          = 0
-	CompressedPercentage = 0
+	paddingBits          = 0
+	compressedPercentage = 0
 )
 
 func writeCompressedFileMetadata(file *os.File) {
-	fmt.Fprintf(file, "PaddingBits:%d\n", PaddingBits)
+	fmt.Fprintf(file, "PaddingBits:%d\n", paddingBits)
 	for key, val := range huffmanCodes {
 		fmt.Fprintf(file, "%c:%s\n", key, val)
 	}
@@ -37,7 +37,7 @@ func updatePaddingBitsInMetadata(file *os.File) error {
 	}
 
 	// Convert PaddingBits to a string and get the first character
-	paddingBitsStr := strconv.Itoa(PaddingBits)
+	paddingBitsStr := strconv.Itoa(paddingBits)
 	if len(paddingBitsStr) == 0 {
 		return fmt.Errorf("PaddingBits value is invalid")
 	}
@@ -49,7 +49,6 @@ func updatePaddingBitsInMetadata(file *os.File) error {
 		return fmt.Errorf("error writing byte: %w", err)
 	}
 
-	fmt.Printf("Updated first digit of PaddingBits to %c\n", byteToWrite)
 	return nil
 }
 
@@ -84,11 +83,11 @@ func convertBinaryToBytes(binaryString string, isLastBatch bool) ([]byte, string
 	// Step4: it it's last batch, then pad the unprocessableBits to process them with additional bits and save them
 	if isLastBatch && unprocessableBitsCount > 0 {
 		for unprocessableBitsCount < 8 {
-			PaddingBits++
+			paddingBits++
 			unprocessableBits += "0"
 			unprocessableBitsCount++
 		}
-		fmt.Println("PaddingBits:", PaddingBits)
+		fmt.Println("PaddingBits:", paddingBits)
 		byteVal, _ := strconv.ParseUint(unprocessableBits, 2, 8)
 		handledBytes = append(handledBytes, byte(byteVal))
 	}
@@ -159,7 +158,7 @@ func CompressFile(filePath string, outputPath string) error {
 
 			outputFile.Write(compressedData)
 			// Update the CompressedPercentage variable so it can be used to show status in CLI
-			CompressedPercentage = (totalBytesRead / int(readFileSize)) * 100
+			compressedPercentage = (totalBytesRead / int(readFileSize)) * 100
 		}
 	}
 

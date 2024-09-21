@@ -34,7 +34,7 @@ func ExtractMetadataFromFile(file *os.File) int {
 			break
 		}
 		if strings.HasPrefix(line, "PaddingBits:") {
-			PaddingBits, _ = strconv.Atoi(strings.TrimPrefix(line, "PaddingBits:"))
+			paddingBits, _ = strconv.Atoi(strings.TrimPrefix(line, "PaddingBits:"))
 		} else {
 			parts := strings.SplitN(line, ":", 2)
 			if strings.Count(line, ":") == 2 {
@@ -60,7 +60,7 @@ func ExtractMetadataFromFile(file *os.File) int {
 	return dataOffsetInt
 }
 
-func ConvertBytesToBinary()
+// func ConvertBytesToBinary()
 
 func DecompressFile(inputFile, outputFilePath string) error {
 	file, err := os.Open(inputFile)

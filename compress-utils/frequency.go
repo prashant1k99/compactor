@@ -14,7 +14,7 @@ const (
 
 type Frequency map[rune]int
 
-func GetFrequencyCount(data string) Frequency {
+func getFrequencyCount(data string) Frequency {
 	freq := make(Frequency)
 	for _, char := range data {
 		freq[char]++
@@ -22,11 +22,11 @@ func GetFrequencyCount(data string) Frequency {
 	return freq
 }
 
-func ProcessBatches(freqCh chan Frequency, taskCh chan []byte, wg *sync.WaitGroup) {
+func processBatches(freqCh chan Frequency, taskCh chan []byte, wg *sync.WaitGroup) {
 	defer wg.Done()
 
 	for fileChunk := range taskCh {
-		freq := GetFrequencyCount(string(fileChunk))
+		freq := getFrequencyCount(string(fileChunk))
 		freqCh <- freq
 	}
 }
@@ -69,7 +69,7 @@ func GetFrequencyForFile(filePath string) (*Frequency, error) {
 
 	for i := 0; i < maxGoroutines; i++ {
 		wg.Add(1)
-		go ProcessBatches(freqCh, taskCh, &wg)
+		go processBatches(freqCh, taskCh, &wg)
 	}
 
 	go func() {

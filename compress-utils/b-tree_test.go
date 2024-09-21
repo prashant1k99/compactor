@@ -6,7 +6,7 @@ import (
 )
 
 func TestLeafNode(t *testing.T) {
-	leaf := &LeafNode{Character: 'a', Freq: 5}
+	leaf := &leafNode{Character: 'a', Freq: 5}
 
 	if !leaf.IsLeaf() {
 		t.Error("LeafNode.IsLeaf() should return true")
@@ -26,24 +26,24 @@ func TestLeafNode(t *testing.T) {
 }
 
 func TestInternalNode(t *testing.T) {
-	leaf1 := Node(&LeafNode{Character: 'a', Freq: 3})
-	leaf2 := Node(&LeafNode{Character: 'b', Freq: 2})
-	internal := &InternalNode{Children: []*Node{&leaf1, &leaf2}, Freq: 5}
+	leaf1 := node(&leafNode{Character: 'a', Freq: 3})
+	leaf2 := node(&leafNode{Character: 'b', Freq: 2})
+	internal := &internalNode{Children: []*node{&leaf1, &leaf2}, Freq: 5}
 
 	if internal.IsLeaf() {
-		t.Error("InternalNode.IsLeaf() should return false")
+		t.Error("internalNode.IsLeaf() should return false")
 	}
 
 	if internal.Frequency() != 5 {
-		t.Errorf("InternalNode.Frequency() = %d; want 5", internal.Frequency())
+		t.Errorf("internalNode.Frequency() = %d; want 5", internal.Frequency())
 	}
 
 	if internal.Char() != '/' {
-		t.Errorf("InternalNode.Char() = %c; want 'a'", internal.Char())
+		t.Errorf("internalNode.Char() = %c; want 'a'", internal.Char())
 	}
 
-	if !reflect.DeepEqual(internal.Child(), []*Node{&leaf1, &leaf2}) {
-		t.Error("InternalNode.Child() returned unexpected result")
+	if !reflect.DeepEqual(internal.Child(), []*node{&leaf1, &leaf2}) {
+		t.Error("internalNode.Child() returned unexpected result")
 	}
 }
 
@@ -64,10 +64,10 @@ func TestPriorityQueue(t *testing.T) {
 	}
 
 	// Test pushing nodes (nodes should be sorted by frequency in ascending order)
-	node1 := Node(&LeafNode{Character: 'a', Freq: 1})
-	node2 := Node(&LeafNode{Character: 'b', Freq: 2})
-	node3 := Node(&LeafNode{Character: 'c', Freq: 4})
-	node4 := Node(&LeafNode{Character: 'd', Freq: 5})
+	node1 := node(&leafNode{Character: 'a', Freq: 1})
+	node2 := node(&leafNode{Character: 'b', Freq: 2})
+	node3 := node(&leafNode{Character: 'c', Freq: 4})
+	node4 := node(&leafNode{Character: 'd', Freq: 5})
 
 	pq.Push(&node1)
 	pq.Push(&node2)
@@ -110,9 +110,9 @@ func TestPriorityQueue(t *testing.T) {
 
 func TestFindCorrectInsertIndex(t *testing.T) {
 	pq := &PriorityQueue{}
-	node1 := Node(&LeafNode{Character: 'a', Freq: 1})
-	node2 := Node(&LeafNode{Character: 'b', Freq: 3})
-	node3 := Node(&LeafNode{Character: 'c', Freq: 5})
+	node1 := node(&leafNode{Character: 'a', Freq: 1})
+	node2 := node(&leafNode{Character: 'b', Freq: 3})
+	node3 := node(&leafNode{Character: 'c', Freq: 5})
 
 	pq.Push(&node1)
 	pq.Push(&node2)
@@ -139,16 +139,16 @@ func TestFindCorrectInsertIndex(t *testing.T) {
 
 func TestAddNewInternalLeaf(t *testing.T) {
 	pq := &PriorityQueue{}
-	node1 := Node(&LeafNode{Character: 'a', Freq: 1})
-	node2 := Node(&LeafNode{Character: 'b', Freq: 3})
-	node3 := Node(&LeafNode{Character: 'c', Freq: 5})
+	node1 := node(&leafNode{Character: 'a', Freq: 1})
+	node2 := node(&leafNode{Character: 'b', Freq: 3})
+	node3 := node(&leafNode{Character: 'c', Freq: 5})
 
 	pq.Push(&node1)
 	pq.Push(&node2)
 	pq.Push(&node3)
 
-	newNode := Node(&LeafNode{Character: 'd', Freq: 2})
-	AddNewInternalLeaf(pq, &newNode)
+	newNode := node(&leafNode{Character: 'd', Freq: 2})
+	addNewInternalLeaf(pq, &newNode)
 
 	expected := &PriorityQueue{}
 	expected.Push(&node1)
@@ -231,7 +231,7 @@ func TestCreateBTreeFromFrequency(t *testing.T) {
 	}
 }
 
-func getTreeDepth(node *Node) int {
+func getTreeDepth(node *node) int {
 	if (*node).IsLeaf() {
 		return 1
 	}
@@ -246,7 +246,7 @@ func getTreeDepth(node *Node) int {
 	return maxDepth + 1
 }
 
-func containsChar(node *Node, char rune) bool {
+func containsChar(node *node, char rune) bool {
 	if (*node).IsLeaf() {
 		return (*node).Char() == char
 	}

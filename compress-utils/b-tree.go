@@ -1,61 +1,69 @@
 package compressutils
 
-type Node interface {
+type leafMethods interface {
 	IsLeaf() bool
-	Frequency() int
 	Char() rune
-	Child() []*Node
 }
 
-type LeafNode struct {
+type internalMethods interface {
+	Child() []*node
+}
+
+type node interface {
+	leafMethods
+	internalMethods
+	Frequency() int
+}
+
+type leafNode struct {
 	Character rune
 	Freq      int
 }
 
-func (n *LeafNode) IsLeaf() bool {
+func (n *leafNode) IsLeaf() bool {
 	return true
 }
 
-func (n *LeafNode) Frequency() int {
+func (n *leafNode) Frequency() int {
 	return n.Freq
 }
 
-func (n *LeafNode) Char() rune {
+func (n *leafNode) Char() rune {
 	return n.Character
 }
 
-func (n *LeafNode) Child() []*Node {
+func (n *leafNode) Child() []*node {
 	return nil
 }
 
-type InternalNode struct {
-	Children []*Node
+type internalNode struct {
+	Children []*node
 	Freq     int
 }
 
-func (n *InternalNode) IsLeaf() bool {
+func (n *internalNode) IsLeaf() bool {
 	return false
 }
 
-func (n *InternalNode) Frequency() int {
+func (n *internalNode) Frequency() int {
 	return n.Freq
 }
 
-func (n *InternalNode) Char() rune {
+func (n *internalNode) Char() rune {
 	return '/'
 }
 
-func (n *InternalNode) Child() []*Node {
+func (n *internalNode) Child() []*node {
 	return n.Children
 }
 
-type PriorityQueue []*Node
+type PriorityQueue []*node
 
 func (pq *PriorityQueue) Len() int {
 	return len(*pq)
 }
 
-func (pq *PriorityQueue) Push(n *Node) {
+func (pq *PriorityQueue) Push(n *node) {
 	*pq = append(*pq, n)
 }
 
@@ -63,7 +71,7 @@ func (pq *PriorityQueue) IsEmpty() bool {
 	return (*pq).Len() == 0
 }
 
-func (pq *PriorityQueue) Pop() *Node {
+func (pq *PriorityQueue) Pop() *node {
 	if pq.IsEmpty() {
 		return nil
 	}
@@ -110,7 +118,7 @@ func findCorrectInsertIndex(freq int, pq *PriorityQueue) int {
 	return low // `low` now points to the correct position for insertion
 }
 
-func AddNewInternalLeaf(pq *PriorityQueue, node *Node) {
+func addNewInternalLeaf(pq *PriorityQueue, node *node) {
 	indexToInsert := findCorrectInsertIndex((*node).Frequency(), pq)
 
 	// Extend slice by 1 element
@@ -122,7 +130,7 @@ func AddNewInternalLeaf(pq *PriorityQueue, node *Node) {
 	(*pq)[indexToInsert] = node
 }
 
-func CreateBTreeFromFrequency(frequency Frequency) *Node {
+func CreateBTreeFromFrequency(frequency Frequency) *node {
 	pq := &PriorityQueue{}
 
 	if len(frequency) <= 0 {
@@ -130,11 +138,11 @@ func CreateBTreeFromFrequency(frequency Frequency) *Node {
 	}
 
 	for char, freq := range frequency {
-		leaf := &LeafNode{
+		leaf := &leafNode{
 			Character: char,
 			Freq:      freq,
 		}
-		node := Node(leaf)
+		node := node(leaf)
 		pq.Push(&node)
 	}
 
@@ -143,16 +151,16 @@ func CreateBTreeFromFrequency(frequency Frequency) *Node {
 		minLeaf := pq.Pop()
 		secondMinLeaf := pq.Pop()
 
-		newInternalLeaf := &InternalNode{
-			Children: []*Node{
+		newInternalLeaf := &internalNode{
+			Children: []*node{
 				minLeaf,
 				secondMinLeaf,
 			},
 			Freq: (*minLeaf).Frequency() + (*secondMinLeaf).Frequency(),
 		}
-		node := Node(newInternalLeaf)
+		node := node(newInternalLeaf)
 
-		AddNewInternalLeaf(pq, &node)
+		addNewInternalLeaf(pq, &node)
 	}
 	return pq.Pop()
 }

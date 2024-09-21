@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"strings"
 
 	"github.com/spf13/cobra"
 )
@@ -32,10 +31,10 @@ func compressFile(cmd *cobra.Command, args []string) {
 
 	if outputFilePath == "" {
 		inputDir := filepath.Dir(inputFile)
-		inputFileName := filepath.Base(inputFile)
-		inputFileNameWithoutExt := strings.TrimSuffix(inputFileName, filepath.Ext(inputFileName))
-		outputFilePath = filepath.Join(inputDir, inputFileNameWithoutExt+".crypt")
+		outputFilePath = inputDir
 	}
+	inputFileName := filepath.Base(inputFile)
+	outputFilePath = filepath.Join(outputFilePath, inputFileName+".crypt")
 
 	err = CompressFile(inputFile, outputFilePath)
 	if err != nil {

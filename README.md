@@ -14,14 +14,16 @@ Download the sample test file from [here](https://www.gutenberg.org/files/135/13
 
 - [x] Determine the frequency of every character in the input file.
 
-- [ ] Build a binary tree from the frequency
+- [x] Build a binary tree from the frequency
 
-- [ ] Generate a prefix code table from the tree
+- [x] Generate a prefix code table from the tree
 
-- [ ] Encode the text using code table.
+- [x] Encode the text using code table.
 
-- [ ] Encode the tree - we'll need to include this in this in the output file so we can decode it.
+- [x] Encode the tree - we'll need to include this in this in the output file so we can decode it.
 
-- [ ] Write the encoded tree and text to an output file.
+- [x] Write the encoded tree and text to an output file.
+
+- [ ] Add the description function
 
 - [ ] Gloss-up the application using Charm tools

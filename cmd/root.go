@@ -6,6 +6,8 @@ package cmd
 import (
 	"fmt"
 	"os"
+	"path/filepath"
+	"strings"
 
 	"github.com/spf13/cobra"
 )
@@ -28,15 +30,18 @@ func compressFile(cmd *cobra.Command, args []string) {
 		os.Exit(1)
 	}
 
-	fmt.Println("Compression called", inputFile)
-	err = CompressFile(inputFile, "test.crypt")
+	if outputFilePath == "" {
+		inputDir := filepath.Dir(inputFile)
+		inputFileName := filepath.Base(inputFile)
+		inputFileNameWithoutExt := strings.TrimSuffix(inputFileName, filepath.Ext(inputFileName))
+		outputFilePath = filepath.Join(inputDir, inputFileNameWithoutExt+".crypt")
+	}
+
+	err = CompressFile(inputFile, outputFilePath)
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
 	}
-	fmt.Printf("Completed | %d percent \r\n", CompressedPercentage)
-
-	fmt.Println("Output file path:", outputFilePath)
 }
 
 func Execute() {

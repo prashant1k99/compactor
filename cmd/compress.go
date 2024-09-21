@@ -26,12 +26,31 @@ func writeCompressedFileMetadata(file *os.File) {
 }
 
 func updatePaddingBitsInMetadata(file *os.File) error {
-	_, err := file.Seek(int64(len([]byte("PaddingBits:"))), 0)
+	// Calculate the position to write
+	// Assuming "PaddingBits:" is at the start of the file and we're updating the first digit after it
+	position := int64(len("PaddingBits:"))
+
+	// Seek to the position where we want to write
+	_, err := file.Seek(position, 0)
 	if err != nil {
-		return err
+		return fmt.Errorf("error seeking to position %d: %w", position, err)
 	}
-	_, err = file.Write([]byte(strconv.Itoa(PaddingBits)))
-	return err
+
+	// Convert PaddingBits to a string and get the first character
+	paddingBitsStr := strconv.Itoa(PaddingBits)
+	if len(paddingBitsStr) == 0 {
+		return fmt.Errorf("PaddingBits value is invalid")
+	}
+	byteToWrite := paddingBitsStr[0]
+
+	// Write the single byte
+	_, err = file.Write([]byte{byteToWrite})
+	if err != nil {
+		return fmt.Errorf("error writing byte: %w", err)
+	}
+
+	fmt.Printf("Updated first digit of PaddingBits to %c\n", byteToWrite)
+	return nil
 }
 
 func convertBytesToBinary(data []byte) string {
@@ -94,7 +113,7 @@ func CompressFile(filePath string, outputPath string) error {
 	}
 
 	// Open a output file for streaming
-	outputFile, err := os.OpenFile(outputPath, os.O_WRONLY|os.O_CREATE|os.O_APPEND|os.O_TRUNC, 0644)
+	outputFile, err := os.OpenFile(outputPath, os.O_CREATE|os.O_TRUNC|os.O_RDWR, 0644)
 	if err != nil {
 		return err
 	}

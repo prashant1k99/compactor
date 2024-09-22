@@ -3,6 +3,7 @@ package cmd
 import (
 	"bufio"
 	"fmt"
+	"io"
 	"os"
 	"strconv"
 	"strings"
@@ -60,7 +61,35 @@ func ExtractMetadataFromFile(file *os.File) int {
 	return dataOffsetInt
 }
 
-// func ConvertBytesToBinary()
+func convertBytesToBinaryString(compressedData []byte, paddingBits int) string {
+	var binaryString string
+	for _, b := range compressedData {
+		binaryString += fmt.Sprintf("%08b", b)
+	}
+	if paddingBits > 0 {
+		binaryString = binaryString[:len(binaryString)-paddingBits]
+	}
+	return binaryString
+}
+
+func decompressContentInBatch(batch []byte, remainingBits string, isLastBatch bool) ([]byte, string) {
+	binaryString := remainingBits + convertBytesToBinaryString(batch, 0)
+	var decodedData []byte
+	var currentCode string
+
+	if isLastBatch {
+		binaryString = binaryString[:len(binaryString)-(paddingBits)]
+	}
+	for _, bit := range binaryString {
+		currentCode += string(bit)
+		if char, exists := reverseHuffmanCode[currentCode]; exists {
+			decodedData = append(decodedData, byte(char))
+			currentCode = ""
+		}
+	}
+
+	return decodedData, currentCode
+}
 
 func DecompressFile(inputFile, outputFilePath string) error {
 	file, err := os.Open(inputFile)
@@ -78,7 +107,55 @@ func DecompressFile(inputFile, outputFilePath string) error {
 		return err
 	}
 	compressedFileSize := compressedFileStats.Size() - int64(offsetBits)
-	fmt.Println("FileSize", compressedFileSize)
-	fmt.Println("Will be outputed to:", outputFilePath)
+
+	// Create Output File
+	outputFile, err := os.Create(outputFilePath)
+	if err != nil {
+		fmt.Println("Error while creating decompressedFile:")
+		return err
+	}
+	defer outputFile.Close()
+
+	_, err = file.Seek(int64(offsetBits), 0) // Seek to byte 100 from the beginning of the file (whence = 0)
+	if err != nil {
+		fmt.Println("Error seeking in file:")
+		return err
+	}
+
+	buffer := make([]byte, 1024)
+	remainingBits := ""
+	totalBytesRead := 0
+	for {
+		n, err := file.Read(buffer)
+		if err != nil && err != io.EOF {
+			return err
+		}
+
+		if n == 0 {
+			break
+		}
+
+		totalBytesRead += n
+		DecompressPercentage = (totalBytesRead / int(compressedFileSize)) * 100
+
+		isLastBatch := totalBytesRead == int(compressedFileSize)
+		var decodedData []byte
+
+		decodedData, remainingBits = decompressContentInBatch(buffer[:n], remainingBits, isLastBatch)
+
+		_, err = outputFile.Write(decodedData)
+		if err != nil {
+			return err
+		}
+
+		if len(remainingBits) > 0 && len(remainingBits) != paddingBits {
+			fmt.Printf("Warning: %d bits remained unprocessed at the end\n", len(remainingBits))
+		}
+
+		if err == io.EOF {
+			break
+		}
+	}
+
 	return nil
 }

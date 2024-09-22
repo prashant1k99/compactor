@@ -7,6 +7,8 @@ import (
 	"strconv"
 
 	compressutils "github.com/prashant1k99/compactor/compress-utils"
+
+	"github.com/schollz/progressbar/v3"
 )
 
 const batchSize = 1024
@@ -87,7 +89,6 @@ func convertBinaryToBytes(binaryString string, isLastBatch bool) ([]byte, string
 			unprocessableBits += "0"
 			unprocessableBitsCount++
 		}
-		fmt.Println("PaddingBits:", paddingBits)
 		byteVal, _ := strconv.ParseUint(unprocessableBits, 2, 8)
 		handledBytes = append(handledBytes, byte(byteVal))
 	}
@@ -96,6 +97,7 @@ func convertBinaryToBytes(binaryString string, isLastBatch bool) ([]byte, string
 }
 
 func CompressFile(filePath string, outputPath string) error {
+	bar := progressbar.Default(100)
 	// First get frequency of the CompressFile
 	frequncyForFile, err := compressutils.GetFrequencyForFile(filePath)
 	if err != nil {
@@ -104,12 +106,14 @@ func CompressFile(filePath string, outputPath string) error {
 
 	// Generate b tree and then geenrate huffman code HuffmanCodeTable
 	rootNode := compressutils.CreateBTreeFromFrequency(*frequncyForFile)
+	bar.Set(5)
 
 	totalCodeCount := len((*frequncyForFile))
 	huffmanCodes, err = compressutils.TraverseBTreeToGenerateHuffmanCodes(rootNode, totalCodeCount)
 	if err != nil {
 		return err
 	}
+	bar.Set(5)
 
 	// Open a output file for streaming
 	outputFile, err := os.OpenFile(outputPath, os.O_CREATE|os.O_TRUNC|os.O_RDWR, 0644)
@@ -119,6 +123,7 @@ func CompressFile(filePath string, outputPath string) error {
 	defer outputFile.Close()
 
 	writeCompressedFileMetadata(outputFile)
+	bar.Set(15)
 
 	// Stream read and convert data
 	// Step 1 open file for readFile
@@ -158,12 +163,14 @@ func CompressFile(filePath string, outputPath string) error {
 
 			outputFile.Write(compressedData)
 			// Update the CompressedPercentage variable so it can be used to show status in CLI
-			compressedPercentage = (totalBytesRead / int(readFileSize)) * 100
+			compressedPercentage = (totalBytesRead / int(readFileSize)) * 80
+			bar.Set(compressedPercentage)
 		}
 	}
 
 	// Once the padding bits is updated as per the code requirement update the metadata
 	err = updatePaddingBitsInMetadata(outputFile)
+	bar.Set(100)
 
 	return err
 }

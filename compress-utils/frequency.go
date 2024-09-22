@@ -12,6 +12,8 @@ const (
 	maxGoroutines = 10
 )
 
+var FrequencyProgress = 0
+
 type Frequency map[rune]int
 
 func getFrequencyCount(data string) Frequency {
@@ -65,7 +67,7 @@ func GetFrequencyForFile(filePath string) (*Frequency, error) {
 
 	var wg sync.WaitGroup
 	freqCh := make(chan Frequency)
-	taskCh := make(chan []byte, maxGoroutines)
+	taskCh := make(chan []byte, 10000)
 
 	for i := 0; i < maxGoroutines; i++ {
 		wg.Add(1)

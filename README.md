@@ -24,6 +24,6 @@ Download the sample test file from [here](https://www.gutenberg.org/files/135/13
 
 - [x] Write the encoded tree and text to an output file.
 
-- [ ] Add the description function
+- [x] Add the description function
 
-- [ ] Gloss-up the application using Charm tools
+- [x] Gloss-up the application using Charm tools

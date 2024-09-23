@@ -145,4 +145,5 @@ func init() {
 	decompressCmd.SetHelpTemplate(decompressCmdHelpTemplate)
 
 	rootCmd.AddCommand(decompressCmd)
+	rootCmd.CompletionOptions.DisableDefaultCmd = true
 }

@@ -24,6 +24,10 @@ var rootCmdHelpTemplate = `{{with .Short}}{{. | trimTrailingWhitespaces}}{{end}}
 Usage:
   {{.UseLine}}
 
+  # Decompress a file
+  compactor dec
+
+
 Flags:
 {{.LocalFlags.FlagUsages | trimTrailingWhitespaces}}
 

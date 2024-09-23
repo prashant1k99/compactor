@@ -14,9 +14,8 @@ import (
 const batchSize = 1024
 
 var (
-	huffmanCodes         = make(compressutils.HuffmanCodeTable)
-	paddingBits          = 0
-	compressedPercentage = 0
+	huffmanCodes = make(compressutils.HuffmanCodeTable)
+	paddingBits  = 0
 )
 
 func writeCompressedFileMetadata(file *os.File) {
@@ -97,19 +96,6 @@ func convertBinaryToBytes(binaryString string, isLastBatch bool) ([]byte, string
 }
 
 func CompressFile(filePath string, outputPath string) error {
-	file, err := os.Open(filePath)
-	if err != nil {
-		return err
-	}
-	defer file.Close()
-
-	readFileStat, err := file.Stat()
-	if err != nil {
-		fmt.Println("Error while reading input file stats:")
-		return err
-	}
-	readFileSize := readFileStat.Size()
-
 	bar := progressbar.NewOptions(100,
 		progressbar.OptionEnableColorCodes(true),
 		progressbar.OptionSetWidth(50),
@@ -122,6 +108,19 @@ func CompressFile(filePath string, outputPath string) error {
 			BarEnd:        "]",
 		}),
 	)
+
+	file, err := os.Open(filePath)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	readFileStat, err := file.Stat()
+	if err != nil {
+		fmt.Println("Error while reading input file stats:")
+		return err
+	}
+	readFileSize := readFileStat.Size()
 
 	bar.Describe("Generating Frequency Map")
 	// First get frequency of the CompressFile
@@ -185,14 +184,15 @@ func CompressFile(filePath string, outputPath string) error {
 
 			outputFile.Write(compressedData)
 			// Update the CompressedPercentage variable so it can be used to show status in CLI
-			compressedPercentage = (totalBytesRead / int(readFileSize)) * 80
-			bar.Set(18 + compressedPercentage)
+
+			progress := int(float64(totalBytesRead) / float64(readFileSize) * 82)
+			bar.Set(18 + progress)
 		}
 	}
 
 	// Once the padding bits is updated as per the code requirement update the metadata
 	err = updatePaddingBitsInMetadata(outputFile)
-	bar.Set(100)
+	bar.Add(2)
 
 	fmt.Printf("\nFile Compressed successfully: %s\n", outputPath)
 

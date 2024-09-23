@@ -86,7 +86,6 @@ func GetFrequencyForFile(filePath string) (*Frequency, error) {
 		for {
 			buffer := make([]byte, batchSize)
 			byteRead, err := file.Read(buffer)
-			fmt.Println("Bytes Read:", byteRead)
 			if err != nil {
 				if err != io.EOF {
 					fmt.Println("Error reading file:", err)

@@ -1,6 +1,7 @@
 package compressutils
 
 import (
+	"fmt"
 	"io"
 	"os"
 	"sort"
@@ -67,7 +68,7 @@ func GetFrequencyForFile(filePath string) (*Frequency, error) {
 
 	var wg sync.WaitGroup
 	freqCh := make(chan Frequency)
-	taskCh := make(chan []byte, 10000)
+	taskCh := make(chan []byte, maxGoroutines)
 
 	for i := 0; i < maxGoroutines; i++ {
 		wg.Add(1)
@@ -79,23 +80,27 @@ func GetFrequencyForFile(filePath string) (*Frequency, error) {
 		close(freqCh)
 	}()
 
-	for {
-		buffer := make([]byte, batchSize)
-		byteRead, err := file.Read(buffer)
-		if err != nil {
-			if err != io.EOF {
-				return nil, err
-			} else {
-				break
+	go func() {
+		defer close(taskCh)
+
+		for {
+			buffer := make([]byte, batchSize)
+			byteRead, err := file.Read(buffer)
+			fmt.Println("Bytes Read:", byteRead)
+			if err != nil {
+				if err != io.EOF {
+					fmt.Println("Error reading file:", err)
+					return
+				} else {
+					break
+				}
+			}
+
+			if byteRead > 0 {
+				taskCh <- buffer[:byteRead]
 			}
 		}
-
-		if byteRead > 0 {
-			taskCh <- buffer[:byteRead]
-		}
-	}
-
-	close(taskCh)
+	}()
 	// Collect all frequencies
 	totalFreq := make(Frequency)
 	for freq := range freqCh {

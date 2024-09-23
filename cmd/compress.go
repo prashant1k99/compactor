@@ -97,36 +97,6 @@ func convertBinaryToBytes(binaryString string, isLastBatch bool) ([]byte, string
 }
 
 func CompressFile(filePath string, outputPath string) error {
-	bar := progressbar.Default(100)
-	// First get frequency of the CompressFile
-	frequncyForFile, err := compressutils.GetFrequencyForFile(filePath)
-	if err != nil {
-		return err
-	}
-
-	// Generate b tree and then geenrate huffman code HuffmanCodeTable
-	rootNode := compressutils.CreateBTreeFromFrequency(*frequncyForFile)
-	bar.Set(5)
-
-	totalCodeCount := len((*frequncyForFile))
-	huffmanCodes, err = compressutils.TraverseBTreeToGenerateHuffmanCodes(rootNode, totalCodeCount)
-	if err != nil {
-		return err
-	}
-	bar.Set(5)
-
-	// Open a output file for streaming
-	outputFile, err := os.OpenFile(outputPath, os.O_CREATE|os.O_TRUNC|os.O_RDWR, 0644)
-	if err != nil {
-		return err
-	}
-	defer outputFile.Close()
-
-	writeCompressedFileMetadata(outputFile)
-	bar.Set(15)
-
-	// Stream read and convert data
-	// Step 1 open file for readFile
 	file, err := os.Open(filePath)
 	if err != nil {
 		return err
@@ -135,11 +105,63 @@ func CompressFile(filePath string, outputPath string) error {
 
 	readFileStat, err := file.Stat()
 	if err != nil {
+		fmt.Println("Error while reading input file stats:")
 		return err
 	}
 	readFileSize := readFileStat.Size()
+
+	bar := progressbar.NewOptions(100,
+		progressbar.OptionEnableColorCodes(true),
+		progressbar.OptionSetWidth(50),
+		progressbar.OptionSetDescription("Initializing..."),
+		progressbar.OptionSetTheme(progressbar.Theme{
+			Saucer:        "[green]█[reset]",
+			SaucerHead:    "[green]█[reset]",
+			SaucerPadding: " ",
+			BarStart:      "[",
+			BarEnd:        "]",
+		}),
+	)
+
+	bar.Describe("Generating Frequency Map")
+	// First get frequency of the CompressFile
+	frequncyForFile, err := compressutils.GetFrequencyForFile(filePath)
+	if err != nil {
+		return err
+	}
+	bar.Add(5)
+
+	bar.Describe("Creating B-Tree")
+
+	// Generate b tree and then geenrate huffman code HuffmanCodeTable
+	rootNode := compressutils.CreateBTreeFromFrequency(*frequncyForFile)
+	bar.Add(5)
+
+	bar.Describe("Extracting Huffman Codes")
+
+	totalCodeCount := len((*frequncyForFile))
+	huffmanCodes, err = compressutils.TraverseBTreeToGenerateHuffmanCodes(rootNode, totalCodeCount)
+	if err != nil {
+		return err
+	}
+	bar.Add(5)
+
+	// Open a output file for streaming
+	outputFile, err := os.OpenFile(outputPath, os.O_CREATE|os.O_TRUNC|os.O_RDWR, 0644)
+	if err != nil {
+		return err
+	}
+	defer outputFile.Close()
+
+	bar.Describe("Writing File Metadata")
+
+	writeCompressedFileMetadata(outputFile)
+	bar.Add(3)
+
 	totalBytesRead := 0
 	remainingBytes := ""
+
+	bar.Describe("Compressing File")
 
 	for {
 		buffer := make([]byte, batchSize)
@@ -164,13 +186,15 @@ func CompressFile(filePath string, outputPath string) error {
 			outputFile.Write(compressedData)
 			// Update the CompressedPercentage variable so it can be used to show status in CLI
 			compressedPercentage = (totalBytesRead / int(readFileSize)) * 80
-			bar.Set(compressedPercentage)
+			bar.Set(18 + compressedPercentage)
 		}
 	}
 
 	// Once the padding bits is updated as per the code requirement update the metadata
 	err = updatePaddingBitsInMetadata(outputFile)
 	bar.Set(100)
+
+	fmt.Printf("\nFile Compressed successfully: %s\n", outputPath)
 
 	return err
 }

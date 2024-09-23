@@ -19,6 +19,47 @@ var rootCmd = &cobra.Command{
 	Run:   compressFile,
 }
 
+var rootCmdHelpTemplate = `{{with .Short}}{{. | trimTrailingWhitespaces}}{{end}}
+
+Usage:
+  {{.UseLine}}
+
+Flags:
+{{.LocalFlags.FlagUsages | trimTrailingWhitespaces}}
+
+Description:
+  This command compresses a single file using Huffman encoding. You need to provide the input file path and optionally the output file path.
+
+Examples:
+  # Compress a file
+  compactor -i input.txt -o output.crypt
+
+  # Compress a file with default output path
+  compactor -i input.txt
+
+`
+
+// Custom help template for decompressCmd
+var decompressCmdHelpTemplate = `{{with .Short}}{{. | trimTrailingWhitespaces}}{{end}}
+
+Usage:
+  {{.UseLine}}
+
+Flags:
+{{.LocalFlags.FlagUsages | trimTrailingWhitespaces}}
+
+Description:
+  This command decompresses a file that was compressed using Huffman encoding. You need to provide the input compressed file path and optionally the output file path.
+
+Examples:
+  # Decompress a file
+  compactor dec -i input.crypt -o output.txt
+
+  # Decompress a file with default output path
+  compactor dec -i input.crypt
+
+`
+
 func compressFile(cmd *cobra.Command, args []string) {
 	inputFile, err := cmd.Flags().GetString("input")
 	if err != nil {
@@ -93,5 +134,9 @@ func init() {
 	decompressCmd.Flags().StringP("output", "o", "", "Enter path for decompressed file")
 	decompressCmd.MarkFlagRequired("input")
 	decompressCmd.Flags().BoolP("help", "h", false, "Show help for all the options")
+
+	rootCmd.SetHelpTemplate(rootCmdHelpTemplate)
+	decompressCmd.SetHelpTemplate(decompressCmdHelpTemplate)
+
 	rootCmd.AddCommand(decompressCmd)
 }

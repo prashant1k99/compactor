@@ -7,6 +7,8 @@ import (
 	"os"
 	"strconv"
 	"strings"
+
+	"github.com/schollz/progressbar/v3"
 )
 
 // Step 1: Extract metadata from the inputFile
@@ -17,10 +19,7 @@ import (
 
 type ReverseHuffmanCode map[string]rune
 
-var (
-	reverseHuffmanCode   = make(ReverseHuffmanCode)
-	DecompressPercentage = 0
-)
+var reverseHuffmanCode = make(ReverseHuffmanCode)
 
 func ExtractMetadataFromFile(file *os.File) int {
 	scanner := bufio.NewScanner(file)
@@ -92,6 +91,19 @@ func decompressContentInBatch(batch []byte, remainingBits string, isLastBatch bo
 }
 
 func DecompressFile(inputFile, outputFilePath string) error {
+	bar := progressbar.NewOptions(100,
+		progressbar.OptionEnableColorCodes(true),
+		progressbar.OptionSetWidth(50),
+		progressbar.OptionSetDescription("Initializing..."),
+		progressbar.OptionSetTheme(progressbar.Theme{
+			Saucer:        "[green]█[reset]",
+			SaucerHead:    "[green]█[reset]",
+			SaucerPadding: " ",
+			BarStart:      "[",
+			BarEnd:        "]",
+		}),
+	)
+
 	file, err := os.Open(inputFile)
 	if err != nil {
 		fmt.Println("Error while opening compressed file:")
@@ -99,7 +111,9 @@ func DecompressFile(inputFile, outputFilePath string) error {
 	}
 	defer file.Close()
 
+	bar.Describe("Extracting Metadata")
 	offsetBits := ExtractMetadataFromFile(file)
+	bar.Add(10)
 
 	compressedFileStats, err := file.Stat()
 	if err != nil {
@@ -122,6 +136,8 @@ func DecompressFile(inputFile, outputFilePath string) error {
 		return err
 	}
 
+	bar.Describe("Decompressing File")
+
 	buffer := make([]byte, 1024)
 	remainingBits := ""
 	totalBytesRead := 0
@@ -136,8 +152,6 @@ func DecompressFile(inputFile, outputFilePath string) error {
 		}
 
 		totalBytesRead += n
-		DecompressPercentage = (totalBytesRead / int(compressedFileSize)) * 100
-
 		isLastBatch := totalBytesRead == int(compressedFileSize)
 		var decodedData []byte
 
@@ -148,14 +162,14 @@ func DecompressFile(inputFile, outputFilePath string) error {
 			return err
 		}
 
-		if len(remainingBits) > 0 && len(remainingBits) != paddingBits {
-			fmt.Printf("Warning: %d bits remained unprocessed at the end\n", len(remainingBits))
-		}
-
 		if err == io.EOF {
 			break
 		}
+		progress := int(float64(totalBytesRead) / float64(compressedFileSize) * 90)
+		bar.Set(10 + progress)
 	}
+
+	fmt.Printf("\nDecompressed File Successfully: %s\n", outputFilePath)
 
 	return nil
 }

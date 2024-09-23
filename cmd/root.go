@@ -29,6 +29,7 @@ Flags:
 
 Description:
   This command compresses a single file using Huffman encoding. You need to provide the input file path and optionally the output file path.
+  Default output path is whatever the folder path for input file
 
 Examples:
   # Compress a file
@@ -50,6 +51,7 @@ Flags:
 
 Description:
   This command decompresses a file that was compressed using Huffman encoding. You need to provide the input compressed file path and optionally the output file path.
+  Default output path is whatever the folder path for input file
 
 Examples:
   # Decompress a file

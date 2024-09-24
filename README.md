@@ -39,16 +39,14 @@ You can perform 2 operations in the compactor CLI
 
 - Compression
   - Default operation, no need to pass argument for compression apart from required flags:
-    - ````~~
+    - ```~~
       ./compactor -h
-      ~~ ```
-      ````
+      ```
 - Decompression
   - For decompressing the compressed file you need to pass `dec` arg with required flags:
-    - ````~~
+    - ```~~
       ./compactor dec -h
-      ~~ ```
-      ````
+      ```
 
 _Flags:_
 

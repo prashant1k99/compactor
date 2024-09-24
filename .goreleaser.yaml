@@ -45,7 +45,6 @@ changelog:
       - "^test:"
 
 release:
-  draft: true
   github:
     owner: prashant1k99
-    name: Prashant Singh
+    name: compactor

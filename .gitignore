@@ -27,3 +27,5 @@ go.work.sum
 # Workspace test output files
 data/*
 tests/**/*
+
+dist/
